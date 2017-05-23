@@ -41,7 +41,8 @@ BEGIN {
 
     for (i = 1; i < ARGC; i++) {
         if (ARGV[i] == "-m") {
-           print i; mode=1;
+           mode=1;
+           print "spliting up a PHP config subsection"
        } else if (ARGV[i] ~ /^-./) {
             e = sprintf("%s: unrecognized option -- %c",
             ARGV[0], substr(ARGV[i], 2, 1))
@@ -56,7 +57,6 @@ BEGIN {
 {
   if (mode && $0 ~ /;{2,}/) {
   # mode 1: create files based on comment headings within sections (i.e. mod_php.ini)
-
     # create comment title.
     comment = $0;
     getline;
@@ -79,7 +79,7 @@ BEGIN {
     #set line to new text
     $0 = heading;
 
-  } else if ($0 ~ /^[[:space:]]*\[.*\][[:space:]]*$/ && $0 !~ /^[[:space:]]*\[HOST\=.*|PATH\=.*/) {
+  } else if (mode < 1 && $0 ~ /^[[:space:]]*\[.*\][[:space:]]*$/ && $0 !~ /^[[:space:]]*\[HOST\=.*|PATH\=.*/) {
   # default mode creating files based on section headings in php.ini, and
   # bypassing special [HOST= ] and [PATH= ] headings
 
@@ -89,11 +89,11 @@ BEGIN {
     gsub(/[[:space:]]/,"_",filename);
     filename ="mod_"tolower(filename)".ini";
   }
-}
 
-{
-  # secomd block applies to every record or line. redirect the output to the
-  # file with the 'filename' determined by the previous block.
+  # redirect the output to the file with the 'filename'.
 
-    if ( filename != "" ) print > (tdir "/" filename)
+    if ( filename != "" ) {
+      fn2 = (tdir "/" filename)
+      print > fn2
+    }
 }
